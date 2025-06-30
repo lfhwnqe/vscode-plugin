@@ -1,0 +1,96 @@
+{
+  "name": "vscode-study-plugin",
+  "displayName": "VSCode学习插件",
+  "description": "一个用于学习VSCode插件开发的基础项目，包含常用功能示例和详细注释",
+  "version": "0.0.1",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "学习",
+    "教程",
+    "示例",
+    "插件开发"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-study-plugin.helloWorld",
+        "title": "显示Hello World消息",
+        "category": "学习插件"
+      },
+      {
+        "command": "vscode-study-plugin.showCurrentTime",
+        "title": "显示当前时间",
+        "category": "学习插件"
+      },
+      {
+        "command": "vscode-study-plugin.insertText",
+        "title": "插入示例文本",
+        "category": "学习插件"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "vscode-study-plugin.helloWorld",
+          "when": "true"
+        },
+        {
+          "command": "vscode-study-plugin.showCurrentTime",
+          "when": "true"
+        },
+        {
+          "command": "vscode-study-plugin.insertText",
+          "when": "editorIsOpen"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "vscode-study-plugin.insertText",
+          "when": "editorHasSelection",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "vscode-study-plugin.helloWorld",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.101.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.25.1",
+    "typescript": "^5.8.3",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
