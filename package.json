@@ -34,8 +34,48 @@
         "command": "vscode-study-plugin.insertText",
         "title": "插入示例文本",
         "category": "学习插件"
+      },
+      {
+        "command": "vscode-study-plugin.refreshSidebar",
+        "title": "刷新侧边栏",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "vscode-study-plugin.openLearningPanel",
+        "title": "打开学习面板",
+        "category": "学习插件"
+      },
+      {
+        "command": "vscode-study-plugin.openLearningGuide",
+        "title": "打开学习指南",
+        "icon": "$(book)"
+      },
+      {
+        "command": "vscode-study-plugin.openFile",
+        "title": "打开文件"
       }
     ],
+
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vscode-study-plugin",
+          "title": "VSCode学习插件",
+          "icon": "$(mortar-board)"
+        }
+      ]
+    },
+
+    "views": {
+      "vscode-study-plugin": [
+        {
+          "id": "vscode-study-plugin.sidebar",
+          "name": "学习功能",
+          "when": "true"
+        }
+      ]
+    },
+
     "menus": {
       "commandPalette": [
         {
@@ -49,6 +89,30 @@
         {
           "command": "vscode-study-plugin.insertText",
           "when": "editorIsOpen"
+        },
+        {
+          "command": "vscode-study-plugin.openLearningPanel",
+          "when": "true"
+        },
+        {
+          "command": "vscode-study-plugin.openLearningGuide",
+          "when": "true"
+        },
+        {
+          "command": "vscode-study-plugin.openFile",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "vscode-study-plugin.refreshSidebar",
+          "when": "view == vscode-study-plugin.sidebar",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-study-plugin.openLearningGuide",
+          "when": "view == vscode-study-plugin.sidebar",
+          "group": "navigation"
         }
       ],
       "editor/context": [
@@ -65,6 +129,12 @@
         "key": "ctrl+shift+h",
         "mac": "cmd+shift+h",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "vscode-study-plugin.openLearningPanel",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l",
+        "when": "true"
       }
     ]
   },

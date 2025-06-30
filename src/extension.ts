@@ -12,6 +12,11 @@
 // 导入VSCode扩展API模块
 // 这个模块包含了所有与VSCode交互所需的API
 import * as vscode from 'vscode';
+import * as path from 'path';
+
+// 导入Webview面板和侧边栏提供器
+import { LearningPanel } from './webviewPanel';
+import { SidebarProvider } from './sidebarProvider';
 
 /**
  * 插件激活函数
@@ -27,8 +32,34 @@ export function activate(context: vscode.ExtensionContext) {
 	// 这些信息可以在VSCode的"开发者工具"中的控制台看到
 	console.log('🎉 VSCode学习插件已激活！');
 
+	// ========== 创建并注册侧边栏视图 ==========
+	// 创建侧边栏数据提供器
+	const sidebarProvider = new SidebarProvider();
+
+	// 注册树形视图
+	const treeView = vscode.window.createTreeView('vscode-study-plugin.sidebar', {
+		treeDataProvider: sidebarProvider,
+		showCollapseAll: true  // 显示"折叠所有"按钮
+	});
+
 	// 显示插件激活通知（可选，用于学习目的）
-	vscode.window.showInformationMessage('VSCode学习插件已成功加载！');
+	vscode.window.showInformationMessage(
+		'VSCode学习插件已成功加载！现在可以在活动栏看到学士帽图标 🎓',
+		'打开侧边栏', '打开面板'
+	).then(selection => {
+		if (selection === '打开侧边栏') {
+			// 显示侧边栏视图
+			vscode.commands.executeCommand('vscode-study-plugin.sidebar.focus');
+		} else if (selection === '打开面板') {
+			LearningPanel.createOrShow(context);
+		}
+	});
+
+	// ========== 创建学习面板命令 ==========
+	// 打开学习面板命令（替换原来的侧边栏）
+	const openLearningPanelCommand = vscode.commands.registerCommand('vscode-study-plugin.openLearningPanel', () => {
+		LearningPanel.createOrShow(context);
+	});
 
 	// ========== 命令1：Hello World 示例 ==========
 	// 注册一个简单的Hello World命令
@@ -96,13 +127,98 @@ console.log('Hello from VSCode Study Plugin!');
 		});
 	});
 
-	// ========== 将命令添加到订阅列表 ==========
+	// ========== 侧边栏和面板相关命令 ==========
+	// 刷新侧边栏命令
+	const refreshSidebarCommand = vscode.commands.registerCommand('vscode-study-plugin.refreshSidebar', () => {
+		// 刷新侧边栏数据
+		sidebarProvider.refresh();
+
+		// 如果面板存在，也刷新面板内容
+		if (LearningPanel.currentPanel) {
+			LearningPanel.currentPanel.dispose();
+			LearningPanel.createOrShow(context);
+		}
+		vscode.window.showInformationMessage('🔄 侧边栏和面板已刷新！');
+	});
+
+	// 打开文件命令（用于侧边栏项目）
+	const openFileCommand = vscode.commands.registerCommand('vscode-study-plugin.openFile', (fileName: string) => {
+		const filePath = vscode.Uri.file(path.join(context.extensionPath, fileName));
+		vscode.commands.executeCommand('vscode.open', filePath);
+	});
+
+	// 打开学习指南命令
+	const openLearningGuideCommand = vscode.commands.registerCommand('vscode-study-plugin.openLearningGuide', () => {
+		const guideUri = vscode.Uri.file(path.join(context.extensionPath, '学习指南.md'));
+		vscode.commands.executeCommand('vscode.open', guideUri);
+	});
+
+	// 显示插件信息命令
+	const showPluginInfoCommand = vscode.commands.registerCommand('vscode-study-plugin.showPluginInfo', () => {
+		const packageJson = require(path.join(context.extensionPath, 'package.json'));
+		const info = `
+📚 插件名称: ${packageJson.displayName}
+🔖 版本: ${packageJson.version}
+👤 发布者: ${packageJson.publisher}
+📝 描述: ${packageJson.description}
+
+🎯 主要功能:
+• Hello World 消息显示
+• 当前时间获取
+• 文本插入到编辑器
+• WebviewPanel 交互界面
+• 学习资源快速访问
+
+⌨️ 快捷键:
+• Ctrl+Shift+H (Mac: Cmd+Shift+H): Hello World
+• Ctrl+Shift+L (Mac: Cmd+Shift+L): 打开学习面板
+		`;
+
+		vscode.window.showInformationMessage(info, { modal: true });
+	});
+
+	// 显示快捷键说明命令
+	const showKeybindingsCommand = vscode.commands.registerCommand('vscode-study-plugin.showKeybindings', () => {
+		const keybindings = `
+⌨️ VSCode学习插件快捷键:
+
+🔹 Hello World:
+   • Windows/Linux: Ctrl+Shift+H
+   • Mac: Cmd+Shift+H
+
+🔹 打开学习面板:
+   • Windows/Linux: Ctrl+Shift+L
+   • Mac: Cmd+Shift+L
+
+🔹 命令面板访问:
+   • Ctrl+Shift+P (Mac: Cmd+Shift+P)
+   • 输入 "学习插件" 查看所有命令
+
+💡 提示: 你可以在 File > Preferences > Keyboard Shortcuts 中自定义快捷键
+		`;
+
+		vscode.window.showInformationMessage(keybindings, { modal: true });
+	});
+
+
+
+	// ========== 将命令和视图添加到订阅列表 ==========
 	// 这很重要！所有的disposable对象都需要添加到context.subscriptions中
 	// 这样当插件被停用时，VSCode会自动清理这些资源，防止内存泄漏
 	context.subscriptions.push(
+		// 基础命令
 		helloWorldCommand,
 		showTimeCommand,
-		insertTextCommand
+		insertTextCommand,
+
+		// 侧边栏和面板相关
+		treeView,                    // 树形视图
+		openLearningPanelCommand,
+		refreshSidebarCommand,       // 更新为侧边栏刷新命令
+		openFileCommand,             // 打开文件命令
+		openLearningGuideCommand,
+		showPluginInfoCommand,
+		showKeybindingsCommand
 	);
 
 	// 输出激活完成信息
